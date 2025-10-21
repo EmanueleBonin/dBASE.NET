@@ -161,7 +161,10 @@
 
                         Memowriter.Write(BitConverter.GetBytes((int)buffer.Length).Reverse().ToArray()); // Length of memo(in bytes) Big Endian
                         Memowriter.Write(buffer);
-                        UsedBlocks = (int)Math.Ceiling(buffer.Length / (decimal)BlockSize);
+                        // EB: Thank to pablopioli for the bug report.
+                        // "In the memo file when you calculate the number of blocks needed you forgot to add the 8 bytes for the block header.
+                        // If the size of the data is just a little bytes shorter than the block size you will lose those last bytes"
+                        UsedBlocks = (int)Math.Ceiling(buffer.Length + 8 / (decimal)BlockSize);
                         // Fill rest of the used blocks with 0x00
                         for (int i = 0; i < UsedBlocks * BlockSize - buffer.Length; i++) {
                             Memowriter.Write((byte)0x00);
